@@ -662,3 +662,150 @@ with tab_diag:
         f"Prioridad inmediata: formalizar BCP/DRP (DSS04), gestion de riesgos (APO11/EDM03) "
         f"y marco de gobierno TI (EDM01)."
     )
+
+# ════════════════════════════════════════════════════════════════
+#  SECCIÓN RESULTADOS AUTOMATIZACIÓN n8n — COBIT 2019
+#  Lee en tiempo real desde Google Sheets (hoja Resultados)
+# ════════════════════════════════════════════════════════════════
+st.subheader("Resultados del Flujo de Automatización — COBIT 2019")
+
+SHEET_ID_RESULTADOS = "1cUEJ_K7_qkZaReLPR-sKDZ8lS8WkiUuiX3aTtqfZkdE"
+URL_RESULTADOS = f"https://docs.google.com/spreadsheets/d/{SHEET_ID_RESULTADOS}/export?format=csv&sheet=Resultados"
+
+@st.cache_data(ttl=300)  # refresca cada 5 minutos
+def cargar_resultados(url):
+    try:
+        df = pd.read_csv(url)
+        df["Fecha_Ejecucion"] = pd.to_datetime(df["Fecha_Ejecucion"], errors="coerce")
+        for col in ["Total_Procesos","Nivel_Promedio","Procesos_Criticos","Procesos_Gestionados",
+                    "Procesos_En_Riesgo","Semaforo_Rojo","Semaforo_Naranja","Semaforo_Amarillo","Semaforo_Verde"]:
+            if col in df.columns:
+                df[col] = pd.to_numeric(df[col], errors="coerce")
+        return df.sort_values("Fecha_Ejecucion", ascending=False).reset_index(drop=True)
+    except Exception as e:
+        return None
+
+res_df = cargar_resultados(URL_RESULTADOS)
+
+if res_df is None or res_df.empty:
+    st.info("No hay ejecuciones registradas. Ejecuta el workflow en n8n para ver resultados aquí.")
+else:
+    # ── Selector de ejecución ─────────────────────────────────
+    opciones = [f"Ejecución {i+1} — {row['Periodo']}  ({row['Fecha_Ejecucion'].strftime('%Y-%m-%d %H:%M')})"
+                for i, row in res_df.iterrows()]
+    sel_idx = st.selectbox("Seleccionar ejecución", range(len(opciones)), format_func=lambda i: opciones[i])
+    ult = res_df.iloc[sel_idx]
+
+    # ── Métricas clave ────────────────────────────────────────
+    r1, r2, r3, r4, r5 = st.columns(5)
+    r1.metric("Nivel promedio",      f"{ult['Nivel_Promedio']:.1f} / 5")
+    r2.metric("Procesos criticos",   int(ult['Procesos_Criticos']),   delta=None)
+    r3.metric("En riesgo",           int(ult['Procesos_En_Riesgo']))
+    r4.metric("Gestionados (>=2)",   int(ult['Procesos_Gestionados']))
+    r5.metric("Dominio mas debil",   ult['Dominio_Mas_Debil'])
+
+    # ── Gráfico semáforo ──────────────────────────────────────
+    col_left, col_right = st.columns([1, 2])
+
+    with col_left:
+        semaforo_df = pd.DataFrame({
+            "Estado":   ["Critico (0)", "En riesgo (1)", "Gestionado (2)", "Avanzado (3+)"],
+            "Cantidad": [int(ult["Semaforo_Rojo"]), int(ult["Semaforo_Naranja"]),
+                         int(ult["Semaforo_Amarillo"]), int(ult["Semaforo_Verde"])],
+            "Color":    ["#e74c3c", "#e67e22", "#f1c40f", "#2ecc71"]
+        })
+        fig_sem = px.bar(
+            semaforo_df, x="Estado", y="Cantidad", color="Estado",
+            color_discrete_map={row["Estado"]: row["Color"] for _, row in semaforo_df.iterrows()},
+            text="Cantidad", height=320,
+            title="Distribucion semaforo COBIT",
+        )
+        fig_sem.update_traces(textposition="outside", showlegend=False)
+        fig_sem.update_layout(
+            plot_bgcolor="#0d1b2a", paper_bgcolor="#0d1b2a", font_color="white",
+            xaxis=dict(gridcolor="#1e3a5f"), yaxis=dict(gridcolor="#1e3a5f", range=[0, 30]),
+            margin=dict(l=10, r=10, t=40, b=10),
+        )
+        st.plotly_chart(fig_sem, use_container_width=True)
+
+    with col_right:
+        # Evolución del nivel promedio entre ejecuciones
+        if len(res_df) > 1:
+            fig_evo = px.line(
+                res_df.sort_values("Fecha_Ejecucion"),
+                x="Fecha_Ejecucion", y="Nivel_Promedio",
+                markers=True, text="Nivel_Promedio",
+                labels={"Nivel_Promedio": "Nivel promedio", "Fecha_Ejecucion": "Fecha"},
+                title="Evolucion del nivel promedio entre ejecuciones",
+                height=320,
+            )
+            fig_evo.add_hline(y=2, line_dash="dash", line_color="#f1c40f",
+                              annotation_text="Meta nivel 2", annotation_font_color="#f1c40f")
+            fig_evo.update_traces(textposition="top center", textfont_size=11,
+                                  line=dict(color="#3498db", width=2))
+            fig_evo.update_layout(
+                plot_bgcolor="#0d1b2a", paper_bgcolor="#0d1b2a", font_color="white",
+                xaxis=dict(gridcolor="#1e3a5f"), yaxis=dict(gridcolor="#1e3a5f", range=[0, 5]),
+                margin=dict(l=10, r=10, t=40, b=10),
+            )
+            st.plotly_chart(fig_evo, use_container_width=True)
+        else:
+            st.info("Ejecuta el workflow más veces para ver la evolución temporal.")
+
+    # ── Procesos urgentes ─────────────────────────────────────
+    if pd.notna(ult.get("Procesos_Urgentes", None)):
+        urgentes = [p.strip() for p in str(ult["Procesos_Urgentes"]).split(",")]
+        cols_urg = st.columns(len(urgentes))
+        for i, proc in enumerate(urgentes):
+            cols_urg[i].markdown(
+                f'<div style="background:#e74c3c22;border:1px solid #e74c3c;border-radius:6px;'
+                f'padding:8px;text-align:center;color:#e74c3c;font-weight:bold;font-size:13px">'
+                f'{proc}</div>', unsafe_allow_html=True
+            )
+
+    # ── Análisis IA ───────────────────────────────────────────
+    st.markdown("#### Analisis IA — Resumen ejecutivo")
+    if pd.notna(ult.get("Analisis_IA", None)):
+        analisis_limpio = str(ult["Analisis_IA"]).replace("**", "").strip()
+        st.markdown(
+            f'<div style="background:#1e3a5f;border-left:4px solid #2ecc71;border-radius:6px;'
+            f'padding:16px 20px;margin-top:8px;margin-bottom:16px">'
+            f'<span style="color:#aed6f1;font-size:13px;font-weight:600">IA — llama-3.3-70b (Groq)</span>'
+            f'<p style="color:#ecf0f1;font-size:14px;margin-top:8px;margin-bottom:0;'
+            f'line-height:1.8;white-space:pre-wrap">{analisis_limpio}</p></div>',
+            unsafe_allow_html=True
+        )
+
+    # ── Recomendaciones IA ────────────────────────────────────
+    st.markdown("#### Plan de accion e indicadores de seguimiento")
+    if pd.notna(ult.get("Recomendaciones_IA", None)):
+        rec_limpio = str(ult["Recomendaciones_IA"]).replace("**", "").strip()
+        st.markdown(
+            f'<div style="background:#1e2a3a;border-left:4px solid #e67e22;border-radius:6px;'
+            f'padding:16px 20px;margin-top:8px;margin-bottom:24px">'
+            f'<span style="color:#f39c12;font-size:13px;font-weight:600">PLAN DE ACCION</span>'
+            f'<p style="color:#ecf0f1;font-size:14px;margin-top:8px;margin-bottom:0;'
+            f'line-height:1.8;white-space:pre-wrap">{rec_limpio}</p></div>',
+            unsafe_allow_html=True
+        )
+
+    # ── Historial de ejecuciones ──────────────────────────────
+    with st.expander("Historial de ejecuciones"):
+        st.dataframe(
+            res_df[["Periodo", "Fecha_Ejecucion", "Nivel_Promedio", "Procesos_Criticos",
+                    "Procesos_En_Riesgo", "Procesos_Gestionados",
+                    "Dominio_Mas_Debil", "Dominio_Mas_Fuerte"]].rename(columns={
+                "Nivel_Promedio": "Nivel Prom.",
+                "Procesos_Criticos": "Criticos",
+                "Procesos_En_Riesgo": "En Riesgo",
+                "Procesos_Gestionados": "Gestionados",
+                "Dominio_Mas_Debil": "Dom. Debil",
+                "Dominio_Mas_Fuerte": "Dom. Fuerte",
+            }),
+            use_container_width=True, hide_index=True,
+        )
+
+    # Botón para forzar refresco
+    if st.button("Actualizar datos desde n8n"):
+        st.cache_data.clear()
+        st.rerun()
