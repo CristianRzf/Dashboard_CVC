@@ -1055,7 +1055,7 @@ with tab_ia:
     # ════════════════════════════════════════════════════════════════
 
     st.subheader("Gobierno de IA — Hoja de Ruta CVC")
-    st.caption("Marco: EU AI Act | NIST AI RMF | ISO 42001:2023 | ACM 2022 | UNESCO 2021")
+    st.caption("Marco: EU AI Act | NIST AI RMF | ISO 42001:2023 | ACM 2022 | UNESCO 2021 | ONU 2024 | CONPES 3975 | CONPES 4144 | Decreto 620/2020")
 
     # ── Clasificación del sistema ─────────────────────────────────
     ia1, ia2, ia3, ia4 = st.columns(4)
@@ -1141,18 +1141,21 @@ with tab_ia:
     st.subheader("Mapa de Riesgos IA — NIST AI RMF")
 
     riesgos_ia = [
-        ("G-1","Sin politica formal de IA",             "Alta","Alto","Aprobar politica uso responsable IA",         "GOVERN"),
-        ("G-2","Responsabilidad difusa sobre LLM",       "Media","Alto","Designar AI Officer formal",                 "GOVERN"),
-        ("M-1","Datos desactualizados en COBIT",         "Media","Alto","Ciclo de actualizacion trimestral validado", "MAP"),
-        ("M-2","Uso fuera de contexto de diseno",        "Media","Alto","Disclaimer visible en dashboard",            "MAP"),
-        ("ME-1","Alucinaciones del LLM",                 "Media","Medio","Temperatura 0.3 + revision humana",         "MEASURE"),
-        ("ME-2","Inconsistencia entre ejecuciones",      "Alta","Bajo","Historial trazable en Google Sheets",         "MEASURE"),
-        ("ME-3","Dependencia proveedor Groq",            "Baja","Alto","Alternativa Ollama local documentada",        "MEASURE"),
-        ("MA-1","Deprecacion del modelo LLM",            "Media","Medio","Monitoreo console.groq.com mensual",        "MANAGE"),
-        ("MA-2","Acceso no autorizado al Sheet",         "Baja","Alto","Restringir permisos a usuarios OTI",          "MANAGE"),
+        ("G-1","Sin politica formal de IA",                  "Alta","Alto", "Aprobar politica uso responsable IA",          "GOVERN","NIST+ONU 2024"),
+        ("G-2","Responsabilidad difusa sobre LLM",            "Media","Alto","Designar AI Officer mediante acto admin.",     "GOVERN","NIST+ACM"),
+        ("G-3","Ausencia de voz unica institucional sobre IA","Media","Medio","OTI como unica dependencia autorizada para IA","GOVERN","ONU 2024"),
+        ("M-1","Datos desactualizados en COBIT",              "Media","Alto","Ciclo actualizacion trimestral validado",      "MAP",   "NIST"),
+        ("M-2","Uso fuera de contexto de diseno",             "Media","Alto","Disclaimer visible en dashboard",              "MAP",   "NIST+ACM"),
+        ("M-3","Brecha digital CVC vs ecosistema global IA",  "Alta","Medio","Participar en redes SINA (IDEAM, ANLA, CAR)", "MAP",   "ONU 2024"),
+        ("ME-1","Alucinaciones del LLM",                      "Media","Medio","Temperatura 0.3 + revision humana",           "MEASURE","NIST+ACM"),
+        ("ME-2","Inconsistencia entre ejecuciones",           "Alta","Bajo", "Historial trazable en Google Sheets",          "MEASURE","NIST"),
+        ("ME-3","Dependencia proveedor Groq",                 "Baja","Alto", "Alternativa Ollama local documentada",         "MEASURE","NIST"),
+        ("ME-4","Huella ambiental del LLM",                   "Media","Medio","Modelos pequenos + documentar emisiones",     "MEASURE","ONU 2024+ACM"),
+        ("MA-1","Deprecacion del modelo LLM",                 "Media","Medio","Monitoreo console.groq.com mensual",          "MANAGE","NIST"),
+        ("MA-2","Acceso no autorizado al Sheet",              "Baja","Alto", "Restringir permisos a usuarios OTI",           "MANAGE","NIST"),
     ]
     riesgos_df = pd.DataFrame(riesgos_ia,
-        columns=["ID","Riesgo","Probabilidad","Impacto","Mitigacion","Funcion_NIST"])
+        columns=["ID","Riesgo","Probabilidad","Impacto","Mitigacion","Funcion_NIST","Marco"])
 
     PROB_NUM = {"Alta":3,"Media":2,"Baja":1}
     IMP_NUM  = {"Alto":3,"Medio":2,"Bajo":1}
@@ -1188,7 +1191,7 @@ with tab_ia:
 
     with st.expander("Detalle de riesgos y mitigaciones"):
         st.dataframe(
-            riesgos_df[["ID","Funcion_NIST","Riesgo","Probabilidad","Impacto","Mitigacion"]],
+            riesgos_df[["ID","Funcion_NIST","Marco","Riesgo","Probabilidad","Impacto","Mitigacion"]],
             use_container_width=True, hide_index=True)
 
     # ── Plan ISO 42001:2023 ───────────────────────────────────────
@@ -1200,6 +1203,8 @@ with tab_ia:
         ("OBJ-3","Nivel COBIT promedio: 1.4 -> 2.5 en 2029",        "Mejora",       2029, 2.5, 1.4, "pts"),
         ("OBJ-4","Aceptacion recomendaciones IA >= 60%",            "Calidad",      2027, 60,  0,   "%"),
         ("OBJ-5","Evaluacion impacto algoritmico anual completada",  "Cumplimiento", 2026, 100, 0,   "%"),
+        ("OBJ-6","Reducir huella carbono IA 10% anual",             "Ambiental",    2027, 10,  0,   "%"),
+        ("OBJ-7","Cero usos de IA fuera del proposito declarado",   "Integridad",   2026, 0,   0,   "incidentes"),
     ]
     iso_df = pd.DataFrame(iso_objetivos,
         columns=["ID","Objetivo","Categoria","Año_meta","Meta","Actual","Unidad"])
@@ -1229,14 +1234,17 @@ with tab_ia:
     st.subheader("Metricas de Fairness e ISO/IEC 42001")
 
     fairness = [
-        ("F-1","Consistencia de resultados",         "Harvard",  80, 100, "%", "Variacion nivel COBIT entre ejecuciones <= 0.1"),
-        ("F-2","Cobertura de dominios COBIT",        "Harvard",  40, 100, "%", "Todos los dominios mencionados en cada analisis"),
-        ("F-3","Proporcionalidad de recomendaciones","Harvard",  60, 100, "%", "100% procesos nivel 0 en plan de accion"),
-        ("M-1","Tasa aceptacion recomendaciones IA", "ISO 42001",0,   60, "%", "Recomendaciones implementadas / generadas"),
-        ("M-2","Tiempo generacion analisis",         "ISO 42001",5,    2, "min","Desde trigger hasta resultado en Sheets"),
-        ("M-3","Disponibilidad del sistema",         "ISO 42001",80,  95, "%", "Ejecuciones exitosas / intentos totales"),
-        ("M-4","Antiguedad datos diagnostico",       "ISO 42001",180, 90, "dias","Dias desde ultima actualizacion COBIT"),
-        ("M-5","Satisfaccion usuario Jefe OTI",      "ISO 42001",0,    4, "1-5","Valoracion utilidad analisis generados"),
+        ("F-1","Consistencia de resultados",             "Harvard",   80, 100, "%",  "Variacion nivel COBIT entre ejecuciones <= 0.1"),
+        ("F-2","Cobertura de dominios COBIT",            "Harvard",   40, 100, "%",  "Todos los dominios mencionados en cada analisis"),
+        ("F-3","Proporcionalidad de recomendaciones",    "Harvard",   60, 100, "%",  "100% procesos nivel 0 en plan de accion"),
+        ("F-4","Equidad en beneficio institucional",     "ONU 2024",  30, 100, "%",  "Recomendaciones que benefician a todas las areas CVC"),
+        ("M-1","Tasa aceptacion recomendaciones IA",     "ISO 42001",  0,  60, "%",  "Recomendaciones implementadas / generadas"),
+        ("M-2","Tiempo generacion analisis",             "ISO 42001",  5,   2, "min","Desde trigger hasta resultado en Sheets"),
+        ("M-3","Disponibilidad del sistema",             "ISO 42001", 80,  95, "%",  "Ejecuciones exitosas / intentos totales"),
+        ("M-4","Antiguedad datos diagnostico",           "ISO 42001",180,  90, "dias","Dias desde ultima actualizacion COBIT"),
+        ("M-5","Satisfaccion usuario Jefe OTI",          "ISO 42001",  0,   4, "1-5","Valoracion utilidad analisis generados"),
+        ("M-6","Cobertura dominios COBIT en analisis",   "ISO 42001",  0, 100, "%",  "% dominios (EDM/APO/BAI/DSS/MEA) mencionados"),
+        ("M-7","Huella carbono por ejecucion",           "ACM+ONU",    0,   0, "gCO2","Documentar y reducir 10% anual"),
     ]
     fair_df = pd.DataFrame(fairness,
         columns=["ID","Metrica","Marco","Actual","Meta","Unidad","Descripcion"])
@@ -1265,11 +1273,16 @@ with tab_ia:
         st.plotly_chart(fig_fair, use_container_width=True)
 
     caja_analisis(
-        "El sistema COBIT-AI de la CVC esta clasificado como <b>Riesgo Limitado</b> bajo el EU AI Act, "
-        "con obligaciones de transparencia activas (Art. 50). "
-        "Los riesgos mas criticos segun NIST AI RMF son la ausencia de politica formal de IA (G-1) "
-        "y la responsabilidad difusa sobre los resultados del LLM (G-2), ambos en zona de alta urgencia. "
-        "El cumplimiento de los principios ACM muestra brechas en Rendicion de cuentas e Impacto ambiental "
-        "que deben formalizarse antes del primer comite de gobernanza. "
-        "Se recomienda aprobar la Politica de Uso Responsable de IA como primer acto administrativo del programa."
+        "El sistema COBIT-AI de la CVC esta clasificado como <b>Riesgo Limitado</b> bajo el EU AI Act (Art. 50), "
+        "con obligaciones de transparencia activas. "
+        "Segun el Informe ONU 2024, Colombia pertenece al grupo de 118 paises del Sur Global sin representacion "
+        "plena en los foros globales de gobernanza de IA — la CVC puede contribuir a cerrar esta brecha implementando "
+        "buenas practicas replicables en el sector ambiental publico. "
+        "Los riesgos mas criticos (NIST AI RMF) son la ausencia de politica formal (G-1), "
+        "la responsabilidad difusa sobre el LLM (G-2) y la falta de voz unica institucional (G-3). "
+        "Se incorporan 3 nuevos riesgos derivados del informe ONU: brecha digital (M-3), huella ambiental (ME-4) "
+        "y 2 nuevos objetivos AIMS: reduccion de carbono (OBJ-6) y cero usos fuera de proposito (OBJ-7). "
+        "El CONPES 4144 refuerza la necesidad de articular el sistema con el SIAC y los estandares de datos "
+        "abiertos del sector ambiental colombiano. "
+        "Accion prioritaria: aprobar la Politica de Uso Responsable de IA como primer acto administrativo del programa."
     )
