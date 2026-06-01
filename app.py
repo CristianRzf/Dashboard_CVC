@@ -1286,3 +1286,440 @@ with tab_ia:
         "abiertos del sector ambiental colombiano. "
         "Accion prioritaria: aprobar la Politica de Uso Responsable de IA como primer acto administrativo del programa."
     )
+
+    # ════════════════════════════════════════════════════════════════
+    #  DIAGNÓSTICOS EXTERNOS DE MADUREZ IA
+    #  Fuente 1: ReadIA — Diagnostico de Madurez IA (Mayo 2026)
+    #  Fuente 2: Evaluacion de Gobernanza de IA (Mayo 2026)
+    # ════════════════════════════════════════════════════════════════
+    st.markdown("---")
+    st.subheader("Diagnosticos Externos de Madurez IA — Mayo 2026")
+    st.caption("Fuentes: ReadIA Diagnostico de Madurez IA | Evaluacion de Gobernanza de IA")
+
+    diag1, diag2 = st.tabs([
+        "ReadIA — Madurez IA (45/100)",
+        "Evaluacion Gobernanza IA (20.42%)"
+    ])
+
+    # ── TAB 1: ReadIA ─────────────────────────────────────────────
+    with diag1:
+
+        # Métricas globales
+        rd1, rd2, rd3, rd4 = st.columns(4)
+        rd1.metric("Puntaje global",      "45 / 100")
+        rd2.metric("Nivel de madurez",    "En Desarrollo")
+        rd3.metric("Pilares analizados",  "4")
+        rd4.metric("Objetivo proyectado", "80 / 100")
+
+        # Datos por pilar
+        pilares_readia = [
+            ("Estrategia y Vision",          83, "Avanzado",      "#2ecc71"),
+            ("Talento y Cultura Digital",     63, "En Desarrollo", "#e67e22"),
+            ("Infraestructura y Tecnologia",  40, "Emergente",     "#e74c3c"),
+            ("Gobernanza, Datos y Seguridad", 30, "Emergente",     "#e74c3c"),
+        ]
+        pilares_df = pd.DataFrame(pilares_readia,
+            columns=["Pilar","Puntaje","Nivel","Color"])
+
+        col_p1, col_p2 = st.columns([1, 1])
+
+        with col_p1:
+            # Gauge-style bar chart por pilar
+            fig_pilares = px.bar(
+                pilares_df.sort_values("Puntaje"),
+                x="Puntaje", y="Pilar", orientation="h",
+                color="Nivel",
+                color_discrete_map={
+                    "Avanzado":      "#2ecc71",
+                    "En Desarrollo": "#e67e22",
+                    "Emergente":     "#e74c3c",
+                },
+                text="Puntaje",
+                labels={"Puntaje":"Puntaje (0-100)", "Pilar":""},
+                height=320,
+                title="Puntaje por Pilar — ReadIA")
+            fig_pilares.add_vline(x=45, line_dash="dash", line_color="white",
+                                  annotation_text="Promedio 45",
+                                  annotation_font_color="white")
+            fig_pilares.add_vline(x=80, line_dash="dot", line_color="#2ecc71",
+                                  annotation_text="Objetivo 80",
+                                  annotation_font_color="#2ecc71")
+            fig_pilares.update_traces(textposition="outside", textfont_size=12)
+            fig_pilares.update_layout(
+                plot_bgcolor="#0d1b2a", paper_bgcolor="#0d1b2a",
+                font_color="white", showlegend=True,
+                xaxis=dict(range=[0, 110], gridcolor="#1e3a5f"),
+                margin=dict(l=10, r=20, t=50, b=20))
+            st.plotly_chart(fig_pilares, use_container_width=True)
+
+        with col_p2:
+            # Radar por pilar
+            p_nombres = pilares_df["Pilar"].tolist()
+            p_valores  = pilares_df["Puntaje"].tolist()
+            fig_rad_readia = go.Figure()
+            fig_rad_readia.add_trace(go.Scatterpolar(
+                r=p_valores + [p_valores[0]],
+                theta=p_nombres + [p_nombres[0]],
+                fill="toself", fillcolor="rgba(231,76,60,0.2)",
+                line=dict(color="#e74c3c", width=2), name="Actual 2026"))
+            fig_rad_readia.add_trace(go.Scatterpolar(
+                r=[80]*5,
+                theta=p_nombres + [p_nombres[0]],
+                fill="toself", fillcolor="rgba(46,204,113,0.08)",
+                line=dict(color="#2ecc71", dash="dot", width=2), name="Objetivo"))
+            fig_rad_readia.update_layout(
+                polar=dict(
+                    radialaxis=dict(visible=True, range=[0, 100],
+                                    gridcolor="#1e3a5f", tickfont=dict(color="white")),
+                    angularaxis=dict(gridcolor="#1e3a5f",
+                                     tickfont=dict(color="white", size=10)),
+                    bgcolor="#0d1b2a"),
+                paper_bgcolor="#0d1b2a", font_color="white",
+                legend=dict(orientation="h", yanchor="bottom", y=-0.2),
+                height=320, title="Radar de Madurez IA — ReadIA")
+            st.plotly_chart(fig_rad_readia, use_container_width=True)
+
+        # Métricas detalladas por pilar
+        st.subheader("Metricas de Evaluacion por Pilar")
+
+        metricas_readia = [
+            ("Estrategia y Vision",          "Alineacion del PETI con Objetivos",                80),
+            ("Estrategia y Vision",          "Identificacion de Casos de Uso IA",                90),
+            ("Estrategia y Vision",          "Plan de Transformacion Digital",                   80),
+            ("Infraestructura y Tecnologia", "Adecuacion Tecnologica Actual",                    40),
+            ("Infraestructura y Tecnologia", "Soporte ERP y Migracion Planeada",                 30),
+            ("Infraestructura y Tecnologia", "Capacidad Procesamiento/Almacenamiento IA",        50),
+            ("Gobernanza, Datos y Seguridad","Gobierno del Dato (Politicas, Procesos)",          20),
+            ("Gobernanza, Datos y Seguridad","Calidad y Seguridad de Datos para IA",             30),
+            ("Gobernanza, Datos y Seguridad","Ciberseguridad y Certificaciones (ISO 27001)",     40),
+            ("Talento y Cultura Digital",    "Competencias Digitales y IA del Personal",         50),
+            ("Talento y Cultura Digital",    "Conocimiento e Interes en IA",                     80),
+            ("Talento y Cultura Digital",    "Cultura de Innovacion y Adopcion Tecnologica",     60),
+        ]
+        met_df = pd.DataFrame(metricas_readia,
+            columns=["Pilar","Metrica","Puntaje_%"])
+
+        COLORES_PILAR = {
+            "Estrategia y Vision":           "#2ecc71",
+            "Infraestructura y Tecnologia":  "#e74c3c",
+            "Gobernanza, Datos y Seguridad": "#e74c3c",
+            "Talento y Cultura Digital":     "#e67e22",
+        }
+        fig_met = px.bar(
+            met_df, x="Puntaje_%", y="Metrica", orientation="h",
+            color="Pilar", color_discrete_map=COLORES_PILAR,
+            text="Puntaje_%",
+            labels={"Puntaje_%":"Puntaje (%)", "Metrica":""},
+            height=520,
+            title="Detalle de metricas por pilar — ReadIA")
+        fig_met.add_vline(x=50, line_dash="dash", line_color="#f1c40f",
+                          annotation_text="50%", annotation_font_color="#f1c40f")
+        fig_met.update_traces(textposition="outside",
+                              texttemplate="%{text}%", textfont_size=11)
+        fig_met.update_layout(
+            plot_bgcolor="#0d1b2a", paper_bgcolor="#0d1b2a",
+            font_color="white",
+            xaxis=dict(range=[0, 115], gridcolor="#1e3a5f"),
+            yaxis=dict(autorange="reversed"),
+            margin=dict(l=10, r=20, t=50, b=20))
+        st.plotly_chart(fig_met, use_container_width=True)
+
+        # Recomendaciones ReadIA
+        st.subheader("Recomendaciones Estrategicas — ReadIA")
+        rec_readia = [
+            ("R1","Alta",  "Infraestructura","Priorizar P-05 migracion ERP JD Edwards a la nube y P-06 integracion para soportar IA."),
+            ("R2","Alta",  "Gobernanza Datos","Acelerar P-03 y P-04: designar CDO formal, crear catalogo de datos, politicas de calidad y seguridad."),
+            ("R3","Alta",  "Ciberseguridad", "Fortalecer P-09: implementar SGSI robusto, capacitacion y controles para IA y APIs externas."),
+            ("R4","Media", "Talento",        "Programa estructurado de capacitacion: ciencia de datos, ML, etica IA, ciberseguridad. Meta: 50% personal."),
+            ("R5","Media", "Gestion IA",     "Definir metricas ROI y KPIs claros para proyectos de IA y analitica avanzada."),
+            ("R6","Media", "Riesgos",        "Formalizar DRP y realizar pruebas periodicas de resiliencia operativa."),
+            ("R7","Baja",  "Ecosistema",     "Maximizar alianzas con universidades y sector privado para co-crear soluciones de IA."),
+        ]
+        rec_df = pd.DataFrame(rec_readia,
+            columns=["ID","Prioridad","Area","Recomendacion"])
+
+        COLORES_PRIO = {"Alta":"#e74c3c","Media":"#e67e22","Baja":"#3498db"}
+        for _, row in rec_df.iterrows():
+            color = COLORES_PRIO[row["Prioridad"]]
+            st.markdown(
+                f'<div style="background:#0d1b2a;border-left:4px solid {color};'
+                f'border-radius:6px;padding:10px 16px;margin-bottom:8px">'
+                f'<span style="color:{color};font-weight:bold;font-size:12px">'
+                f'{row["ID"]} — {row["Prioridad"].upper()} | {row["Area"]}</span>'
+                f'<p style="color:#ecf0f1;font-size:13px;margin:4px 0 0 0">'
+                f'{row["Recomendacion"]}</p></div>',
+                unsafe_allow_html=True)
+
+        caja_analisis(
+            "El diagnostico ReadIA posiciona a la CVC en nivel <b>En Desarrollo (45/100)</b>. "
+            "La brecha mas critica es <b>Gobernanza, Datos y Seguridad (30/100 - Emergente)</b>, "
+            "directamente alineada con el nivel COBIT promedio de 1.4/5 y la madurez DAMA de 1.18/5. "
+            "La fortaleza clara es <b>Estrategia y Vision (83/100 - Avanzado)</b>, evidenciada en el PETI 2026-2029 "
+            "y el BSC con 14 indicadores. "
+            "El objetivo es alcanzar <b>80/100 (Avanzado)</b> al finalizar el roadmap, "
+            "lo que requiere cerrar brechas en infraestructura (P-05, P-06) y gobierno del dato (P-03, P-04) "
+            "como habilitadores criticos para la adopcion de IA."
+        )
+
+    # ── TAB 2: Evaluación Gobernanza IA ──────────────────────────
+    with diag2:
+
+        # Métricas globales
+        eg1, eg2, eg3, eg4 = st.columns(4)
+        eg1.metric("Puntaje global",       "20.42 %")
+        eg2.metric("Nivel de madurez",     "Basico (21-40%)")
+        eg3.metric("Preguntas evaluadas",  "29")
+        eg4.metric("Practicas en 0%",      "7 / 29")
+
+        # Datos por pilar de gobernanza
+        pilares_gov = [
+            ("Ciberseguridad (ISO 27090/27091)", 15.0, 100),
+            ("IA Explicable (ISO 23894)",         6.25, 100),
+            ("Regulacion UE (NIS2/AI Act)",      20.83, 100),
+            ("Gestion IA (ISO 42001-42005)",     25.0,  100),
+            ("Marco Nacional (CONPES 4144)",     31.25, 100),
+        ]
+        pgov_df = pd.DataFrame(pilares_gov,
+            columns=["Pilar","Actual_%","Meta_%"])
+
+        col_g1, col_g2 = st.columns([1, 1])
+
+        with col_g1:
+            fig_gov = px.bar(
+                pgov_df.sort_values("Actual_%"),
+                x="Actual_%", y="Pilar", orientation="h",
+                color="Actual_%",
+                color_continuous_scale=["#e74c3c","#e67e22","#f1c40f","#2ecc71"],
+                range_color=[0, 100],
+                text="Actual_%",
+                labels={"Actual_%":"Implementacion (%)", "Pilar":""},
+                height=320,
+                title="Nivel de implementacion por pilar — Gobernanza IA")
+            fig_gov.add_vline(x=20.42, line_dash="dash", line_color="white",
+                              annotation_text="Promedio 20.42%",
+                              annotation_font_color="white")
+            fig_gov.update_traces(textposition="outside",
+                                  texttemplate="%{text:.1f}%", textfont_size=11)
+            fig_gov.update_layout(
+                plot_bgcolor="#0d1b2a", paper_bgcolor="#0d1b2a",
+                font_color="white", coloraxis_showscale=False,
+                xaxis=dict(range=[0, 120], gridcolor="#1e3a5f"),
+                margin=dict(l=10, r=20, t=50, b=20))
+            st.plotly_chart(fig_gov, use_container_width=True)
+
+        with col_g2:
+            # Radar pilares gobernanza
+            pg_nom = pgov_df["Pilar"].tolist()
+            pg_val = pgov_df["Actual_%"].tolist()
+            fig_rad_gov = go.Figure()
+            fig_rad_gov.add_trace(go.Scatterpolar(
+                r=pg_val + [pg_val[0]],
+                theta=pg_nom + [pg_nom[0]],
+                fill="toself", fillcolor="rgba(52,152,219,0.2)",
+                line=dict(color="#3498db", width=2), name="Actual"))
+            fig_rad_gov.add_trace(go.Scatterpolar(
+                r=[60]*6,
+                theta=pg_nom + [pg_nom[0]],
+                fill="toself", fillcolor="rgba(46,204,113,0.05)",
+                line=dict(color="#2ecc71", dash="dot", width=2), name="Meta intermedio"))
+            fig_rad_gov.update_layout(
+                polar=dict(
+                    radialaxis=dict(visible=True, range=[0, 100],
+                                    gridcolor="#1e3a5f", tickfont=dict(color="white"),
+                                    ticksuffix="%"),
+                    angularaxis=dict(gridcolor="#1e3a5f",
+                                     tickfont=dict(color="white", size=9)),
+                    bgcolor="#0d1b2a"),
+                paper_bgcolor="#0d1b2a", font_color="white",
+                legend=dict(orientation="h", yanchor="bottom", y=-0.2),
+                height=320, title="Radar Gobernanza IA — 5 pilares")
+            st.plotly_chart(fig_rad_gov, use_container_width=True)
+
+        # Detalle de las 29 preguntas
+        st.subheader("Detalle de las 29 preguntas evaluadas")
+
+        preguntas_gov = [
+            (1,  "Clasificacion sistemas IA de alto riesgo",                          25,  "Regulacion UE (NIS2/AI Act)"),
+            (2,  "Politica formal de cumplimiento regulatorio y etico en IA",          25,  "Gestion IA (ISO 42001-42005)"),
+            (3,  "Monitoreo de algoritmos IA para detectar sesgos o errores",          0,   "IA Explicable (ISO 23894)"),
+            (4,  "Protocolo de notificacion de incidentes relacionados con IA",        25,  "Regulacion UE (NIS2/AI Act)"),
+            (5,  "Roles definidos para supervision etica y legal de IA",               25,  "Gestion IA (ISO 42001-42005)"),
+            (6,  "Inventario actualizado de sistemas, modelos y fuentes de datos IA",  25,  "Gestion IA (ISO 42001-42005)"),
+            (7,  "Proveedores de IA con cumplimiento regulatorio y de seguridad",      50,  "Ciberseguridad (ISO 27090/27091)"),
+            (8,  "Plan de ciberseguridad especifico para sistemas de IA",              25,  "Ciberseguridad (ISO 27090/27091)"),
+            (9,  "Direccion revisa y aprueba riesgos regulatorios de IA",              25,  "Regulacion UE (NIS2/AI Act)"),
+            (10, "Controles de acceso diferenciados para entornos de IA",              0,   "Ciberseguridad (ISO 27090/27091)"),
+            (11, "Datos de entrenamiento protegidos contra alteraciones/fugas",        25,  "Ciberseguridad (ISO 27090/27091)"),
+            (12, "Auditorias o pruebas de vulnerabilidad a sistemas de IA",            25,  "Ciberseguridad (ISO 27090/27091)"),
+            (13, "Plan de respaldo y recuperacion de modelos ante incidentes",         25,  "Gestion IA (ISO 42001-42005)"),
+            (14, "Personal capacitado en ciberseguridad aplicada a IA",               25,  "Ciberseguridad (ISO 27090/27091)"),
+            (15, "Herramientas automatizadas para monitorear amenazas en IA",          0,   "Ciberseguridad (ISO 27090/27091)"),
+            (16, "Politicas de actualizacion y parcheo de seguridad para modelos IA",  0,   "Ciberseguridad (ISO 27090/27091)"),
+            (17, "Estrategia formal de adopcion de IA alineada con el negocio",        25,  "Gestion IA (ISO 42001-42005)"),
+            (18, "Evaluacion de riesgos en cada proyecto de IA antes del despliegue",  25,  "Regulacion UE (NIS2/AI Act)"),
+            (19, "Resultados de IA medidos mediante KPIs",                             25,  "Gestion IA (ISO 42001-42005)"),
+            (20, "Actualizacion de modelos de IA segun cambios en datos o contexto",   0,   "Gestion IA (ISO 42001-42005)"),
+            (21, "Comite o figura formal encargada de gobernanza de IA",               25,  "Gestion IA (ISO 42001-42005)"),
+            (22, "Proyectos de IA con ciclo de vida documentado",                      25,  "Gestion IA (ISO 42001-42005)"),
+            (23, "Resultados de IA comprensibles y explicables para usuarios",         25,  "IA Explicable (ISO 23894)"),
+            (24, "Informar al usuario cuando interactua con un sistema de IA",         0,   "IA Explicable (ISO 23894)"),
+            (25, "Herramientas explicativas (SHAP, LIME) para decisiones algoritmicas", 0,  "IA Explicable (ISO 23894)"),
+            (26, "Registros auditables de decisiones automatizadas por IA",            0,   "IA Explicable (ISO 23894)"),
+            (27, "Aplicacion de lineamientos CONPES 4144 en estrategia de IA",        25,  "Marco Nacional (CONPES 4144)"),
+            (28, "Participacion en programas publicos de formacion etica en IA",       25,  "Marco Nacional (CONPES 4144)"),
+            (29, "Promocion del uso etico, inclusivo y sostenible de la IA",           50,  "Marco Nacional (CONPES 4144)"),
+        ]
+        preg_df = pd.DataFrame(preguntas_gov,
+            columns=["No","Pregunta","Valor_%","Marco"])
+
+        # Semaforo por pregunta
+        preg_df["Estado"] = preg_df["Valor_%"].apply(
+            lambda v: "No implementado" if v == 0
+            else ("Inicial" if v == 25
+            else ("Parcial" if v == 50 else "Completo")))
+
+        COLORES_ESTADO = {
+            "No implementado": "#e74c3c",
+            "Inicial":         "#e67e22",
+            "Parcial":         "#f1c40f",
+            "Completo":        "#2ecc71",
+        }
+
+        fig_preg = px.bar(
+            preg_df,
+            x="Valor_%", y=preg_df["No"].astype(str) + ". " + preg_df["Pregunta"].str[:40],
+            orientation="h",
+            color="Estado",
+            color_discrete_map=COLORES_ESTADO,
+            text="Valor_%",
+            labels={"Valor_%":"Implementacion (%)", "y":""},
+            height=900,
+            title="29 Preguntas de Gobernanza IA — Estado de implementacion")
+        fig_preg.add_vline(x=25, line_dash="dash", line_color="#e67e22",
+                           annotation_text="Inicial 25%",
+                           annotation_font_color="#e67e22")
+        fig_preg.add_vline(x=50, line_dash="dash", line_color="#f1c40f",
+                           annotation_text="Parcial 50%",
+                           annotation_font_color="#f1c40f")
+        fig_preg.update_traces(textposition="outside",
+                               texttemplate="%{text}%", textfont_size=10)
+        fig_preg.update_layout(
+            plot_bgcolor="#0d1b2a", paper_bgcolor="#0d1b2a",
+            font_color="white", showlegend=True,
+            xaxis=dict(range=[0, 80], gridcolor="#1e3a5f"),
+            yaxis=dict(autorange="reversed", tickfont=dict(size=10)),
+            margin=dict(l=10, r=20, t=50, b=20))
+        st.plotly_chart(fig_preg, use_container_width=True)
+
+        # Tabla filtrable
+        marco_opts = ["Todos"] + sorted(preg_df["Marco"].unique())
+        marco_sel  = st.selectbox("Filtrar por marco", marco_opts)
+        preg_fil   = preg_df if marco_sel == "Todos" else preg_df[preg_df["Marco"] == marco_sel]
+        st.dataframe(
+            preg_fil[["No","Marco","Pregunta","Valor_%","Estado"]],
+            use_container_width=True, hide_index=True)
+
+        # Plan de mejora escalonado
+        st.subheader("Plan de Mejora Escalonado — Gobernanza IA")
+
+        plan_mejora = [
+            ("Corto plazo (0-6 meses)",   "Crear Comite de Gobernanza de IA formal",                         "Alta"),
+            ("Corto plazo (0-6 meses)",   "Desarrollar Politica Integral de IA y Etica",                     "Alta"),
+            ("Corto plazo (0-6 meses)",   "Inventario inicial de sistemas de IA clasificados por riesgo",     "Alta"),
+            ("Corto plazo (0-6 meses)",   "Protocolo basico de notificacion y gestion de incidentes IA",      "Alta"),
+            ("Mediano plazo (6-18 meses)","Implementar monitoreo de sesgos y explicabilidad (SHAP, LIME)",    "Media"),
+            ("Mediano plazo (6-18 meses)","Plan de ciberseguridad especifico para IA (controles, parcheo)",   "Media"),
+            ("Mediano plazo (6-18 meses)","Ciclo de vida documentado para proyectos de IA",                   "Media"),
+            ("Mediano plazo (6-18 meses)","Capacitacion: gobernanza IA, etica, explicabilidad, ciberseg.",    "Media"),
+            ("Largo plazo (18+ meses)",   "Optimizacion continua del marco de gobernanza IA",                 "Baja"),
+            ("Largo plazo (18+ meses)",   "Soluciones avanzadas de explicabilidad para usuarios externos",    "Baja"),
+            ("Largo plazo (18+ meses)",   "Participacion activa en ecosistemas de innovacion y estandares IA","Baja"),
+            ("Largo plazo (18+ meses)",   "Cultura organizacional de IA responsable, etica y sostenible",     "Baja"),
+        ]
+        plan_df = pd.DataFrame(plan_mejora,
+            columns=["Plazo","Accion","Prioridad"])
+
+        COLORES_PLAZO = {
+            "Corto plazo (0-6 meses)":    "#e74c3c",
+            "Mediano plazo (6-18 meses)": "#e67e22",
+            "Largo plazo (18+ meses)":    "#3498db",
+        }
+        for plazo, grupo in plan_df.groupby("Plazo", sort=False):
+            color = COLORES_PLAZO.get(plazo, "#888")
+            st.markdown(
+                f'<div style="color:{color};font-weight:bold;'
+                f'font-size:13px;margin:12px 0 4px 0">{plazo}</div>',
+                unsafe_allow_html=True)
+            for _, row in grupo.iterrows():
+                st.markdown(
+                    f'<div style="background:#0d1b2a;border-left:3px solid {color};'
+                    f'border-radius:4px;padding:8px 14px;margin-bottom:4px">'
+                    f'<span style="color:#ecf0f1;font-size:13px">{row["Accion"]}</span>'
+                    f'</div>', unsafe_allow_html=True)
+
+        caja_analisis(
+            "La evaluacion de Gobernanza de IA arroja un puntaje de <b>20.42% — Nivel Basico</b>, "
+            "con <b>7 de 29 practicas en 0%</b> (inexistentes): monitoreo de sesgos (P3), "
+            "controles de acceso para entornos IA (P10), monitoreo automatizado de amenazas (P15), "
+            "politicas de parcheo de seguridad (P16), actualizacion de modelos (P20), "
+            "informar al usuario sobre IA (P24), herramientas SHAP/LIME (P25) y registros auditables (P26). "
+            "El pilar mas debil es <b>IA Explicable (ISO 23894) con 6.25%</b>, "
+            "seguido de <b>Ciberseguridad (ISO 27090/27091) con 15%</b>. "
+            "El unico punto sobre 50% es la promocion del uso etico e inclusivo (P29: 50%) "
+            "y el cumplimiento de proveedores (P7: 50%). "
+            "La accion mas urgente es la creacion formal del Comite de Gobernanza de IA "
+            "y la Politica Integral, que habilitan todas las demas mejoras."
+        )
+
+    # ── Comparativa consolidada ambos diagnósticos ────────────────
+    st.markdown("---")
+    st.subheader("Comparativa Consolidada — Ambos Diagnosticos")
+
+    comp_data = [
+        ("Estrategia y Vision / Estrategia IA",         83, 25,  80),
+        ("Gobernanza y Datos",                           30,  20.42, 70),
+        ("Infraestructura y Tecnologia",                 40,  15,  75),
+        ("Talento y Cultura Digital",                    63,  25,  80),
+        ("Ciberseguridad",                               30,  15,  80),
+        ("Explicabilidad / Transparencia",               30,   6.25,75),
+        ("Marco Regulatorio (EU/CONPES)",                40,  31.25,80),
+    ]
+    comp_df = pd.DataFrame(comp_data,
+        columns=["Dimension","ReadIA_%","EvalGov_%","Meta_%"])
+
+    fig_comp = px.bar(
+        comp_df,
+        x="Dimension",
+        y=["ReadIA_%","EvalGov_%","Meta_%"],
+        barmode="group",
+        color_discrete_map={
+            "ReadIA_%":  "#3498db",
+            "EvalGov_%": "#e74c3c",
+            "Meta_%":    "#2ecc71",
+        },
+        labels={"value":"Puntaje / Implementacion (%)","variable":"Fuente","Dimension":""},
+        height=420,
+        text_auto=True,
+        title="Comparativa: ReadIA vs Evaluacion Gobernanza IA vs Meta")
+    fig_comp.update_layout(
+        plot_bgcolor="#0d1b2a", paper_bgcolor="#0d1b2a",
+        font_color="white",
+        xaxis=dict(tickangle=-20, gridcolor="#1e3a5f"),
+        yaxis=dict(range=[0, 110], gridcolor="#1e3a5f"),
+        legend=dict(orientation="h", yanchor="bottom", y=-0.3),
+        margin=dict(l=10, r=10, t=50, b=80))
+    st.plotly_chart(fig_comp, use_container_width=True)
+
+    caja_analisis(
+        "Los dos diagnosticos externos confirman consistentemente las mismas brechas: "
+        "<b>Gobernanza de Datos (30% / 20.42%)</b> y <b>Ciberseguridad (30% / 15%)</b> "
+        "son los pilares mas rezagados en ambas evaluaciones. "
+        "Ambos coinciden en que la <b>Estrategia y Vision es la fortaleza principal</b> de la CVC "
+        "(ReadIA 83%, CONPES 4144 31.25% — el mas alto de la evaluacion de gobernanza). "
+        "La diferencia de escala entre ambos instrumentos refleja enfoques complementarios: "
+        "ReadIA mide capacidad de adopcion de IA, mientras la Evaluacion de Gobernanza mide "
+        "la formalidad y robustez del marco de control. "
+        "Juntos, los diagnosticos definen una agenda clara: "
+        "<b>P-03, P-04 (datos), P-09 (ciberseguridad) y P-05, P-06 (infraestructura)</b> "
+        "son los proyectos PETI con mayor impacto en la madurez de IA de la CVC."
+    )
